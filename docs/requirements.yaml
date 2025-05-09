@@ -1,9 +1,9 @@
 name: docs_quantum_rfs
 channels:
 
-  # - conda-forge
+  - conda-forge
 
-  # - defaults
+  - defaults
 dependencies:
     # Base depends
   - python
@@ -13,13 +13,10 @@ dependencies:
   - sphinx-design
   - sphinx-copybutton
 
-  -numpy
-
 
 
 
     # Pip-only installs
   - pip:
     - -e ../
-    - sphinx-autoapi
-    - sphinx-rtd-theme
+
