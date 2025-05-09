@@ -15,6 +15,7 @@ dependencies:
 
   - qiskit
   - qiskit-aer
+  - matplotlib
 
 
     # Pip-only installs
