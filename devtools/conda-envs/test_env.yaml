@@ -12,6 +12,9 @@ dependencies:
   - pytest-cov
   - codecov
 
+  - qiskit
+  - qiskit-aer
+
     # Pip-only installs
   #- pip:
   #  - codecov

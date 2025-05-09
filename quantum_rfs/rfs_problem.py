@@ -1,6 +1,8 @@
 
+from qiskit import QuantumCircuit
 import random
 import itertools
+import qiskit_aer
 
 class RFSProblem:
     """
@@ -146,14 +148,72 @@ class RFSProblem:
         """
         start_root_id = ()
         root_secret = self._c_rfs(start_root_id)
-        print(root_secret)
-        print(self.secrets[()])
+        # print(root_secret)
+        # print(self.secrets[()])
+        return root_secret
 
 
+
+    # Bernstein-Vazirani circuit to find s
+    def bernstein_vazirani_circuit(self, s):
+        """
+        This is the quantum circuit implementation of the Bernstein Vazirani solution to the RFS problem.
+
+        Parameters
+        -------
+        s  : string
+            Secret used to construct and check the solution
+
+        Returns
+        -------
+        qc  : QuantumCircuit
+            The quantum circuit of the Bernstein Vazirani solution to the problem.
+        """
+        n = len(s)
+        qc = QuantumCircuit(n + 1, n)
+
+        qc.x(n)       # Set output qubit to |1⟩
+        qc.h(n)       # Hadamard on output qubit
+        qc.h(range(n))  # Hadamard on input qubits
+
+        # Oracle U_f: flips phase based on s · x
+        for i, bit in enumerate(s):
+            if bit == '1':
+                qc.cx(i, n)
+
+        qc.h(range(n))        # Hadamard again
+        qc.measure(range(n), range(n))  # Measure input qubits
+
+        return qc
 
 
     def solve_quantumly(self):
-        pass
+        """
+        Overarching method that calls the recursion for the quantum solution.
+
+        Returns
+        -------
+        g_secret  : number
+            The g(secret) of the  root node (current node when recursive)
+        """
+        n = 21
+        bitstrings = [''.join(p) for p in itertools.product('01', repeat=n)]
+        s = random.choice(bitstrings)  # secret string
+
+        # Inner product mod 2
+        def g(s, x):
+            return sum(int(a) & int(b) for a, b in zip(s, x)) % 2
+
+        # Build and run
+        qc = self.bernstein_vazirani_circuit(s)
+        print(qc.draw())
+        sim = qiskit_aer.AerSimulator()
+        result = sim.run(qc, shots=1024).result()
+        counts = result.get_counts()
+
+        bitstring = max(counts, key=counts.get)
+        reversed_bitstring = bitstring[::-1]
+        return self.g_func[reversed_bitstring]
 
 
 

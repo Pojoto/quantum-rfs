@@ -13,7 +13,8 @@ dependencies:
   - sphinx-design
   - sphinx-copybutton
 
-
+  - qiskit
+  - qiskit-aer
 
 
     # Pip-only installs
