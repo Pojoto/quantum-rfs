@@ -1,8 +1,9 @@
 quantum_rfs
 ==============================
 [//]: # (Badges)
+
 [![docs](https://readthedocs.org/projects/quantum-rfs/badge/?version=latest&style=flat-square)](https://quantum-rfs.readthedocs.io/)
-[![GitHub Actions Build Status](https://github.com/Pojoto/quantum_rfs/workflows/CI/badge.svg)](https://github.com/Pojoto/quantum_rfs/actions?query=workflow%3ACI)
+[![GitHub Actions Build Status](https://github.com/Pojoto/quantum-rfs/workflows/CI/badge.svg)](https://github.com/Pojoto/quantum-rfs/actions?query=workflow%3ACI)
 [![codecov](https://codecov.io/gh/Pojoto/quantum_rfs/branch/main/graph/badge.svg)](https://codecov.io/gh/Pojoto/quantum_rfs/branch/main)
 
 
