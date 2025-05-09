@@ -1,12 +1,22 @@
+.. API Documentation
+.. =============
+
+.. .. automodule:: quantum_rfs.RFSProblem
+..    :members:
+..    :undoc-members:
+..    :show-inheritance:
+
+.. .. autoclass:: quantum_rfs.RFSProblem
+..    :members:
+..    :undoc-members:
+..    :show-inheritance:
+
+
 API Documentation
-=============
+=================
 
-.. automodule:: quantum_rfs.RFSProblem
-   :members:
-   :undoc-members:
-   :show-inheritance:
+.. autosummary::
+   :toctree: generated/
+   :nosignatures:
 
-.. autoclass:: quantum_rfs.RFSProblem
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   quantum_rfs.RFSProblem
