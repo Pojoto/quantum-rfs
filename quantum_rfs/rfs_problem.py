@@ -39,26 +39,11 @@ class RFSProblem:
 
     def __str__(self):
         """
-        Print dunder method to display bitstring
+        Print dunder method to display the secrets of all the nodes in this problem.
         """
-        string = "hi"
+        string = str(self.secrets)
         return string
 
-    def __eq__(self, other):        
-        """
-        Check if two BitString objects are equal
-
-        Parameters
-        ----------
-        other   : Bitstring
-            other Bitstring
-        Returns
-        -------
-        equality  : boolean
-            Boolean value showing equality or not
-        """
-
-        return True
 
 
     def _g_func_create(self):
@@ -73,6 +58,7 @@ class RFSProblem:
         bitstrings = [''.join(bits) for bits in itertools.product('01', repeat=self.n)]
         result = {b: random.choice('01') for b in bitstrings}
         return result
+    
 
     def _g_secret_populate(self, node_id=()):
         """
@@ -154,7 +140,7 @@ class RFSProblem:
 
 
 
-    # Bernstein-Vazirani circuit to find s
+
     def bernstein_vazirani_circuit(self, s):
         """
         This is the quantum circuit implementation of the Bernstein Vazirani solution to the RFS problem.
@@ -172,17 +158,17 @@ class RFSProblem:
         n = len(s)
         qc = QuantumCircuit(n + 1, n)
 
-        qc.x(n)       # Set output qubit to |1⟩
-        qc.h(n)       # Hadamard on output qubit
-        qc.h(range(n))  # Hadamard on input qubits
+        qc.x(n)       
+        qc.h(n)       
+        qc.h(range(n))  
 
-        # Oracle U_f: flips phase based on s · x
+
         for i, bit in enumerate(s):
             if bit == '1':
                 qc.cx(i, n)
 
-        qc.h(range(n))        # Hadamard again
-        qc.measure(range(n), range(n))  # Measure input qubits
+        qc.h(range(n))    
+        qc.measure(range(n), range(n))  
 
         return qc
 
@@ -198,13 +184,11 @@ class RFSProblem:
         """
         n = 21
         bitstrings = [''.join(p) for p in itertools.product('01', repeat=n)]
-        s = random.choice(bitstrings)  # secret string
+        s = random.choice(bitstrings)  
 
-        # Inner product mod 2
         def g(s, x):
             return sum(int(a) & int(b) for a, b in zip(s, x)) % 2
 
-        # Build and run
         qc = self.bernstein_vazirani_circuit(s)
         print(qc.draw())
         sim = qiskit_aer.AerSimulator()
