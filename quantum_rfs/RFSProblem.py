@@ -3,6 +3,7 @@ from qiskit import QuantumCircuit
 import random
 import itertools
 import qiskit_aer
+import matplotlib.pyplot as plt
 
 class RFSProblem:
     """
@@ -22,7 +23,8 @@ class RFSProblem:
         """
         self.n = n
         self.l = l
-        self.last_call_count = 0
+        self.last_classical_call_count = 0
+        self.last_quantum_call_count = 0
 
         self.secrets = {
 
@@ -108,7 +110,7 @@ class RFSProblem:
         g_secret  : number
             The g(secret) of the current node to be used recursively in the solution
         """
-        self.last_call_count += 1
+        self.last_classical_call_count += 1
 
         level = len(root_id)
 
@@ -132,6 +134,7 @@ class RFSProblem:
         """
         This is the overarching function that calls the recursive classical solution.
         """
+        self.last_classical_call_count = 0
         start_root_id = ()
         root_secret = self._c_rfs(start_root_id)
         # print(root_secret)
@@ -185,11 +188,7 @@ class RFSProblem:
         bitstrings = [''.join(p) for p in itertools.product('01', repeat=self.n)]
         s = self.secrets[()]
 
-        def g(s, x):
-            return sum(int(a) & int(b) for a, b in zip(s, x)) % 2
-
         qc = self.bernstein_vazirani_circuit(s)
-        print(qc.draw())
         sim = qiskit_aer.AerSimulator()
         result = sim.run(qc, shots=1024).result()
         counts = result.get_counts()
@@ -199,11 +198,53 @@ class RFSProblem:
         return self.g_func[reversed_bitstring]
 
 
+    def visualize_classical(self):
+        """
+        Visualization function that shows the graph comparison between theoretical 
+        and actual runtime for the classical solution to this RFS problem.
+        """
+
+        ns = [2, 3, 4, 5, 6, 7]
+        ls = [2, 3, 4, 5, 6, 7]
+        actual_counts = []
+        theoretical_counts = []
+        labels = []
+
+        for n in ns:
+            for l in ls:
+
+                call_count = 0
+                self.solve_classically()
+                actual_counts.append(call_count)
+                theoretical_counts.append(n ** l)
+                labels.append(f"{n}^{l}")
 
 
+        data = list(zip(actual_counts, theoretical_counts, labels))
+
+        data.sort(key=lambda tup: tup[0])
+
+        actual_counts_sorted = [d[0] for d in data]
+        theoretical_counts_sorted = [d[1] for d in data]
+        labels_sorted = [d[2] for d in data]
 
 
+        plt.plot(actual_counts, label="Real Runtime", marker='o')
+        plt.plot(theoretical_counts, label="Theoretical Runtime (n^l)", linestyle='--', marker='x')
+        plt.xticks(ticks=range(len(labels)), labels=labels, rotation=45)
+        plt.xlabel("Input (n, l)")
+        plt.ylabel("Runtime")
+        plt.title("Real vs. Theoretical Runtime")
+        plt.legend()
+        plt.show()
 
+
+    def visualize_quantum(self):
+        """
+        Visualization function that shows the quantum circuit used in the quantum solution.
+        """
+        qc = self.bernstein_vazirani_circuit()
+        print(qc.draw())
 
 
 

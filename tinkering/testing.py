@@ -124,12 +124,12 @@ labels_sorted = [d[2] for d in data]
 
 
 # Plotting
-plt.plot(actual_counts_sorted, label="Actual Call Count", marker='o')
-plt.plot(theoretical_counts_sorted, label="n^l (Theoretical)", linestyle='--', marker='x')
+plt.plot(actual_counts, label="Real Runtime", marker='o')
+plt.plot(theoretical_counts, label="Theoretical Runtime (n^l)", linestyle='--', marker='x')
 plt.xticks(ticks=range(len(labels)), labels=labels, rotation=45)
 plt.xlabel("Input (n, l)")
-plt.ylabel("Function Calls")
-plt.title("Actual vs Theoretical Call Growth")
+plt.ylabel("Runtime")
+plt.title("Real vs. Theoretical Runtime")
 plt.legend()
 # plt.tight_layout()
 plt.show()
