@@ -1,4 +1,4 @@
-from rfs_problem import *
+from quantum_rfs.RFSProblem import *
 
 new_problem = RFSProblem(2, 2)
 
