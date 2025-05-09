@@ -1,8 +1,12 @@
 API Documentation
-=================
+=============
 
-.. autosummary::
-   :toctree: autosummary
+.. automodule:: quantum_rfs.RFSProblem
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
-   quantum_rfs.canvas
-   quantum_rfs.RFSProblem
+.. autoclass:: quantum_rfs.RFSProblem
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -3,5 +3,7 @@
 # Add imports here
 from .functions import *
 
+from .RFSProblem import *
 
-from ._version import __version__
+
+#from ._version import __version__
