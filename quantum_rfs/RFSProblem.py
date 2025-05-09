@@ -182,9 +182,8 @@ class RFSProblem:
         g_secret  : number
             The g(secret) of the  root node (current node when recursive)
         """
-        n = 21
-        bitstrings = [''.join(p) for p in itertools.product('01', repeat=n)]
-        s = random.choice(bitstrings)  
+        bitstrings = [''.join(p) for p in itertools.product('01', repeat=self.n)]
+        s = self.secrets[()]
 
         def g(s, x):
             return sum(int(a) & int(b) for a, b in zip(s, x)) % 2
