@@ -2,7 +2,7 @@ Getting Started
 ===============
 
 
-You might choose to write an overview tutorial or set of tutorials.
+Once this package is installed, simply import the package in your code to use the main RFSProblem class and its methods.
 
 .. code-block:: python
     

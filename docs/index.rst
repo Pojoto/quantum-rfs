@@ -5,10 +5,10 @@
 
 Welcome to quantum_rfs's documentation!
 =========================================================
-molecool is a Python package designed to read in, perform analysis,
-and visualize molecular coordinates. The file formats `xyz` and `pdb` are
-currently supported.
-
+This Python package is designed for you to implement real examples of the Recursive Fourier Sampling problem, 
+additionally providing both classical and quantum solutions to the RFS problem. The quantum solution utilizes the 
+Bernstein-Vazirani algorithm, while the classical solution uses a brute-force recursion approach. Both methods can be compared
+and visualized in the package. Check out the API page to see more concrete documentation on specific classes or methods.
 .. grid:: 1 1 2 2
 
     .. grid-item-card:: Getting Started
