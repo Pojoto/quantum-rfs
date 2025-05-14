@@ -147,8 +147,14 @@ class RFSProblem:
     def apply_U_f(self, qc, n, f_table):
         """
         Implements U_f where f_table is a dict mapping bitstrings to {0,1}
-        input_qubits: list of qubit indices for input
-        output_qubit: index of output qubit
+        Parameters
+        -------
+        qc : QuantumCircuit
+            The circuit that the unitary function will be on
+        n : Number
+            The 'n' used throughout the RFS problem
+        f_table : Dictionary
+            A mapping of the input bits to output bits to represent the function
         """
         input_qubits = list(range(n))
         output_qubit = n
@@ -156,15 +162,12 @@ class RFSProblem:
         
         for bitstring, fx in f_table.items():
             if fx == 1:
-                # Invert bits where bitstring has 0
                 for i, bit in enumerate(bitstring):
                     if bit == '0':
                         qc.x(input_qubits[i])
                 
-                # Apply MCX (multi-controlled X) gate
-                qc.mcx(input_qubits, output_qubit)  # assumes enough ancillas for >4 controls
+                qc.mcx(input_qubits, output_qubit) 
                 
-                # Undo inversion
                 for i, bit in enumerate(bitstring):
                     if bit == '0':
                         qc.x(input_qubits[i])
@@ -178,14 +181,17 @@ class RFSProblem:
         Parameters
         -------
         qc  : QuantumCircuit
-            Secret used to construct and check the solution
-        s  : string
-            Secret used to construct and check the solution
-
-        Returns
-        -------
-        qc  : QuantumCircuit
-            The quantum circuit of the Bernstein Vazirani solution to the problem.
+            The main quantum circuit that is added to and operated on throughout the algorithm
+        A  : QuantumCircuit
+            The A oracle as a quantum circuit
+        G  : QuantumCircuit
+            The G function oracle as a quantum circuit    
+        k  : Number
+            The current level in the recursion stack
+        quantum_registers  : Tuple
+            A tuple of the quantum registers used throughout the algorithm
+        ancilla_register  : QuantumRegister
+            The quantum register signifying the ancilla qubit that is used for phase kickback purposes
         """
 
         if k == self.l:
@@ -234,7 +240,7 @@ class RFSProblem:
 
         Returns
         -------
-        g_secret  : number
+        g_secret  : Number
             The g(secret) of the  root node (current node when recursive)
         """
 
