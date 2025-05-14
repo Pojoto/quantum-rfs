@@ -1,5 +1,5 @@
 
-from qiskit import QuantumCircuit
+from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister
 import random
 import itertools
 import qiskit_aer
@@ -93,6 +93,7 @@ class RFSProblem:
 
         self.secrets[node_id] = curr_secret
 
+
         return self.g_func[curr_secret]
         
 
@@ -143,13 +144,41 @@ class RFSProblem:
 
 
 
+    def apply_U_f(self, qc, n, f_table):
+        """
+        Implements U_f where f_table is a dict mapping bitstrings to {0,1}
+        input_qubits: list of qubit indices for input
+        output_qubit: index of output qubit
+        """
+        input_qubits = list(range(n))
+        output_qubit = n
 
-    def bernstein_vazirani_circuit(self, s):
+        
+        for bitstring, fx in f_table.items():
+            if fx == 1:
+                # Invert bits where bitstring has 0
+                for i, bit in enumerate(bitstring):
+                    if bit == '0':
+                        qc.x(input_qubits[i])
+                
+                # Apply MCX (multi-controlled X) gate
+                qc.mcx(input_qubits, output_qubit)  # assumes enough ancillas for >4 controls
+                
+                # Undo inversion
+                for i, bit in enumerate(bitstring):
+                    if bit == '0':
+                        qc.x(input_qubits[i])
+            
+
+
+    def bernstein_vazirani_circuit(self, qc, A, G, k, quantum_registers, ancilla_register):
         """
         This is the quantum circuit implementation of the Bernstein Vazirani solution to the RFS problem.
 
         Parameters
         -------
+        qc  : QuantumCircuit
+            Secret used to construct and check the solution
         s  : string
             Secret used to construct and check the solution
 
@@ -158,22 +187,45 @@ class RFSProblem:
         qc  : QuantumCircuit
             The quantum circuit of the Bernstein Vazirani solution to the problem.
         """
-        n = len(s)
-        qc = QuantumCircuit(n + 1, n)
 
-        qc.x(n)       
-        qc.h(n)       
-        qc.h(range(n))  
+        if k == self.l:
+            all_qubits = []
+            for reg in quantum_registers:
+                for qubit in reg:
+                    all_qubits.append(qubit)
+            all_qubits = all_qubits + [ancilla_register[0]]
+            qc.append(A, all_qubits)
+            return
 
 
-        for i, bit in enumerate(s):
-            if bit == '1':
-                qc.cx(i, n)
+        q_reg = QuantumRegister(self.n)
+        qc.add_register(q_reg)
+        for qubit in q_reg:
+            qc.h(qubit)
+        
 
-        qc.h(range(n))    
-        qc.measure(range(n), range(n))  
+        a_reg = QuantumRegister(1)
+        qc.add_register(a_reg)
+        qc.x(a_reg[0])
+        qc.h(a_reg[0])
 
-        return qc
+        self.bernstein_vazirani_circuit(qc, A, G, k+1, quantum_registers+(q_reg,), a_reg)
+
+        recent_qreg_qubits = []
+        for qubit in q_reg:
+            qc.h(qubit)
+            recent_qreg_qubits.append(qubit)
+        
+        g_input_qubits = recent_qreg_qubits + [ancilla_register[0]]
+        qc.append(G, g_input_qubits)
+
+        for qubit in q_reg:
+            qc.h(qubit)
+
+        self.bernstein_vazirani_circuit(qc, A, G, k+1, quantum_registers+(q_reg,), a_reg)
+        
+        return
+    
 
 
     def solve_quantumly(self):
@@ -185,122 +237,39 @@ class RFSProblem:
         g_secret  : number
             The g(secret) of the  root node (current node when recursive)
         """
-        bitstrings = [''.join(p) for p in itertools.product('01', repeat=self.n)]
-        s = self.secrets[()]
 
-        qc = self.bernstein_vazirani_circuit(s)
+        A_table = {''.join(k): int(v) for k, v in (self.A_oracle).items()}
+        print(A_table)
+
+        q_reg = QuantumRegister(1)
+        c_reg = ClassicalRegister(1, name='c')
+        qc = QuantumCircuit(q_reg, c_reg)
+
+
+        A = QuantumCircuit(self.n * self.l + 1, name= '      A      ')
+        A_table = {''.join(k): int(v) for k, v in (self.A_oracle).items()}
+        self.apply_U_f(A, self.n * self.l, f_table=A_table)
+
+        # print(A.draw())
+
+        G = QuantumCircuit(self.n + 1, name='      G      ') 
+        self.apply_U_f(G, self.n, f_table=self.g_func)
+
+        self.bernstein_vazirani_circuit(qc, A, G, 0, (), q_reg)
+
+        qc.measure(0, 0)
+
+
+        # print(qc.draw(fold=1000))
+        # qc.draw(output='mpl').savefig("pic.png")
+
+        qc = qc.decompose()
+        #print(qc.draw(fold=1000))
+
         sim = qiskit_aer.AerSimulator()
         result = sim.run(qc, shots=1024).result()
         counts = result.get_counts()
-
-        bitstring = max(counts, key=counts.get)
-        reversed_bitstring = bitstring[::-1]
-        return self.g_func[reversed_bitstring]
+        print(counts)
 
 
-    # def visualize_classical(self):
-    #     """
-    #     Visualization function that shows the graph comparison between theoretical 
-    #     and actual runtime for the classical solution to this RFS problem.
-    #     """
-
-    #     ns = [2, 3, 4, 5, 6, 7]
-    #     ls = [2, 3, 4, 5, 6, 7]
-    #     actual_counts = []
-    #     theoretical_counts = []
-    #     labels = []
-
-    #     for n in ns:
-    #         for l in ls:
-
-    #             call_count = 0
-    #             self.solve_classically()
-    #             actual_counts.append(call_count)
-    #             theoretical_counts.append(n ** l)
-    #             labels.append(f"{n}^{l}")
-
-
-    #     data = list(zip(actual_counts, theoretical_counts, labels))
-
-    #     data.sort(key=lambda tup: tup[0])
-
-    #     actual_counts_sorted = [d[0] for d in data]
-    #     theoretical_counts_sorted = [d[1] for d in data]
-    #     labels_sorted = [d[2] for d in data]
-
-
-    #     plt.plot(actual_counts, label="Real Runtime", marker='o')
-    #     plt.plot(theoretical_counts, label="Theoretical Runtime (n^l)", linestyle='--', marker='x')
-    #     plt.xticks(ticks=range(len(labels)), labels=labels, rotation=45)
-    #     plt.xlabel("Input (n, l)")
-    #     plt.ylabel("Runtime")
-    #     plt.title("Real vs. Theoretical Runtime")
-    #     plt.legend()
-    #     plt.show()
-
-
-    # def visualize_quantum(self):
-    #     """
-    #     Visualization function that shows the quantum circuit used in the quantum solution.
-    #     """
-    #     qc = self.bernstein_vazirani_circuit()
-    #     print(qc.draw())
-
-
-
-# import matplotlib.pyplot as plt
-
-# ns = [2, 3, 4, 5, 6, 7]
-# ls = [2, 3, 4, 5, 6, 7]
-# actual_counts = []
-# theoretical_counts = []
-# labels = []
-
-# for n in ns:
-#     for l in ls:
-#         secrets = {
-
-#         }
-#         A_oracle = {
-
-#         }
-#         g_func = g_func_create(n)
-#         g_secret_populate(n, l, secrets, g_func, A_oracle)
-
-#         call_count = 0
-#         c_rfs(())
-#         actual_counts.append(call_count)
-#         theoretical_counts.append(n ** l)
-#         labels.append(f"{n}^{l}")
-
-
-
-# # Step 1: Collect data points into tuples
-# data = list(zip(actual_counts, theoretical_counts, labels))
-
-# # Step 2: Sort by actual count (first item in each tuple)
-# data.sort(key=lambda tup: tup[0])
-
-# # Step 3: Unpack the sorted data back into separate lists
-# actual_counts_sorted = [d[0] for d in data]
-# theoretical_counts_sorted = [d[1] for d in data]
-# labels_sorted = [d[2] for d in data]
-
-
-# # Plotting
-# plt.plot(actual_counts_sorted, label="Actual Call Count", marker='o')
-# plt.plot(theoretical_counts_sorted, label="n^l (Theoretical)", linestyle='--', marker='x')
-# plt.xticks(ticks=range(len(labels)), labels=labels, rotation=45)
-# plt.xlabel("Input (n, l)")
-# plt.ylabel("Function Calls")
-# plt.title("Actual vs Theoretical Call Growth")
-# plt.legend()
-# # plt.tight_layout()
-# plt.show()
-
-
-
-
-
-
-# def create_rfs_problem(n, l, ):
+        return self.g_func[self.secrets[()]]

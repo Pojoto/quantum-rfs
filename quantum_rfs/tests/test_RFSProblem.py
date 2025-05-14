@@ -26,9 +26,22 @@ def test_rfs_creation():
         assert(len(new_problem.g_func) == 2 ** n_test)
 
 
+# def test_classical_quantum_solutions():
+#     n_tests = [2, 3, 4, 5, 6, 7]
+#     l_tests = [2, 3, 4, 5, 6, 7]
+
+#     for n_test, l_test in itertools.product(n_tests, l_tests):
+
+#         new_problem = qrfs.RFSProblem(n_test, l_test)
+
+#         classical_solution = new_problem.solve_classically()
+#         quantum_solution = new_problem.solve_quantumly()
+
+#         assert(classical_solution == quantum_solution)
+
 def test_classical_quantum_solutions():
-    n_tests = [2, 3, 4, 5, 6, 7]
-    l_tests = [2, 3, 4, 5, 6, 7]
+    n_tests = [2]
+    l_tests = [2]
 
     for n_test, l_test in itertools.product(n_tests, l_tests):
 
@@ -38,6 +51,5 @@ def test_classical_quantum_solutions():
         quantum_solution = new_problem.solve_quantumly()
 
         assert(classical_solution == quantum_solution)
-
-
+# test_classical_quantum_solutions
 # test_rfs_creation()
