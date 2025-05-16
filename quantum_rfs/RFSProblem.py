@@ -219,6 +219,7 @@ class RFSProblem:
 
         recent_qreg_qubits = []
         for qubit in q_reg:
+            self.last_quantum_call_count += 1
             qc.h(qubit)
             recent_qreg_qubits.append(qubit)
         
@@ -243,6 +244,8 @@ class RFSProblem:
         g_secret  : Number
             The g(secret) of the  root node (current node when recursive)
         """
+        
+        self.last_classical_call_count = 0
 
         A_table = {''.join(k): int(v) for k, v in (self.A_oracle).items()}
         print(A_table)
